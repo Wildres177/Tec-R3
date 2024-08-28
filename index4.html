@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Conscientização Ambiental</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e0f7fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        #game-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 50px auto;
+            text-align: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            margin-bottom: 30px;
+        }
+        
+        .instructions {
+            font-size: 18px;
+            color: #666;
+        }
+        
+        #bins {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .bin {
+            width: 150px;
+            height: 200px;
+            border: 2px solid #00897b;
+            border-radius: 10px;
+            background-color: #4db6ac;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+        }
+        
+        .bin img {
+            width: 100px;
+            margin-bottom: 10px;
+        }
+        
+        #items {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        #items img {
+            width: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 10px;
+        }
+        
+        #items img:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+        
+        #message-container {
+            margin-top: 20px;
+        }
+        
+        #message {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #388e3c; /* Cor verde para acertos */
+        }
+        
+        #score {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #00796b;
+        }
+        
+        #restart-btn {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #00796b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #restart-btn:hover {
+            background-color: #004d40;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #2E7D32;
+            color: white;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+        }
+
+        footer .social-links {
+            margin-bottom: 10px;
+        }
+
+        footer .social-links a {
+            margin: 0 10px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        footer .social-links a:hover {
+            text-decoration: underline;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        footer a {
+            color: #AED581;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media(max-width:768px){
+            form{
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>Jogo de Conscientização Ambiental</h1>
+            <p class="instructions">Arraste os itens para a lixeira correta e ganhe pontos por cada acerto!</p>
+        </header>
+        
+        <div id="score">Pontuação: 0</div>
+        
+        <section id="bins">
+            <div class="bin" id="bin-paper" data-type="bin-paper">
+                <img src="Lixeira para papel.jfif" alt="Lixeira para Papel">
+                <p>Papel</p>
+            </div>
+            <div class="bin" id="bin-plastic" data-type="bin-plastic">
+                <img src="Lixeira para plastico.jfif" alt="Lixeira para Plástico">
+                <p>Plástico</p>
+            </div>
+            <div class="bin" id="bin-glass" data-type="bin-glass">
+                <img src="Lixeira para vidro.jfif" alt="Lixeira para Vidro">
+                <p>Vidro</p>
+            </div>
+            <div class="bin" id="bin-metal" data-type="bin-metal">
+                <img src="Lixeira para metal.jfif" alt="Lixeira para Metal">
+                <p>Metal</p>
+            </div>
+        </section>
+        
+        <section id="items">
+            <img src="Papel.jfif" alt="Papel" draggable="true" id="item-paper" data-type="bin-paper">
+            <img src="Garrafa de plastico.jfif" alt="Garrafa Plástica" draggable="true" id="item-plastic" data-type="bin-plastic">
+            <img src="Vidro.jfif" alt="Vidro" draggable="true" id="item-glass" data-type="bin-glass">
+            <img src="lata.jfif" alt="Lata de Alumínio" draggable="true" id="item-metal" data-type="bin-metal">
+        </section>
+        
+        <div id="message-container">
+            <p id="message"></p>
+        </div>
+        
+        <button id="restart-btn" onclick="restartGame()">Recomeçar</button>
+    </div>
+    <script>
+        let score = 0;
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.id);
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const data = event.dataTransfer.getData("text");
+            const item = document.getElementById(data);
+            const binType = event.target.closest('.bin').getAttribute('data-type');
+
+            if (item.getAttribute("data-type") === binType) {
+                event.target.closest('.bin').appendChild(item);
+                item.style.display = 'none'; // Esconde o item ao ser corretamente colocado
+                item.draggable = false;
+                updateScore(10); // Atualiza a pontuação
+                playSound('assets/sounds/correct.mp3');
+                displayMessage("Bom trabalho!", "#388e3c");
+            } else {
+                playSound('assets/sounds/wrong.mp3');
+                displayMessage("Ops! Colocou na lixeira errada!", "#d32f2f");
+            }
+        }
+
+        function restartGame() {
+            location.reload();
+        }
+
+        function displayMessage(message, color) {
+            const messageElement = document.getElementById("message");
+            messageElement.innerText = message;
+            messageElement.style.color = color;
+        }
+
+        function playSound(soundPath) {
+            const audio = new Audio(soundPath);
+            audio.play();
+        }
+
+        function updateScore(points) {
+            score += points;
+            document.getElementById("score").innerText = `Pontuação: ${score}`;
+        }
+
+        // Para suporte ao toque e arraste com mouse
+        document.querySelectorAll('#items img').forEach(item => {
+            item.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                item.style.position = 'absolute';
+                item.style.left = `${touch.pageX - item.offsetWidth / 2}px`;
+                item.style.top = `${touch.pageY - item.offsetHeight / 2}px`;
+                item.style.zIndex = '1000';
+                
+                function moveAt(touch) {
+                    item.style.left = `${touch.pageX - item.offsetWidth / 2}px`;
+                    item.style.top = `${touch.pageY - item.offsetHeight / 2}px`;
+                }
+                
+                document.addEventListener('touchmove', function(e) {
+                    moveAt(e.touches[0]);
+                });
+                
+                item.addEventListener('touchend', function() {
+                    const bins = document.querySelectorAll('.bin');
+                    bins.forEach(bin => {
+                        const binRect = bin.getBoundingClientRect();
+                        const itemRect = item.getBoundingClientRect();
+                        
+                        if (itemRect.left >= binRect.left && itemRect.right <= binRect.right && itemRect.top >= binRect.top && itemRect.bottom <= binRect.bottom) {
+                            dropTouch(item, bin);
+                        }
+                    });
+                    item.style.position = 'static';
+                    item.style.zIndex = '1';
+                    document.removeEventListener('touchmove', moveAt);
+                });
+            });
+
+            // Arraste e solte para desktop
+            item.addEventListener('dragstart', drag);
+            document.querySelectorAll('.bin').forEach(bin => {
+                bin.addEventListener('dragover', allowDrop);
+                bin.addEventListener('drop', drop);
+            });
+        });
+
+        function dropTouch(item, bin) {
+            const binType = bin.getAttribute('data-type');
+
+            if (item.getAttribute("data-type") === binType) {
+                bin.appendChild(item);
+                item.style.display = 'none'; // Esconde o item ao ser corretamente colocado
+                item.draggable = false;
+                updateScore(10); // Atualiza a pontuação
+                playSound('assets/sounds/correct.mp3');
+                displayMessage("Bom trabalho!", "#388e3c");
+            } else {
+                playSound('assets/sounds/wrong.mp3');
+                displayMessage("Ops! Colocou na lixeira errada!", "#d32f2f");
+            }
+        }
+    </script>
+    <footer>
+        <p>&copy; 2024 Reciclagem Consciente. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
